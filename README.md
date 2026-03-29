@@ -145,16 +145,60 @@ UniFi MCP supports three connection modes, set via `UNIFI_API_TYPE`:
 ## Commands
 
 ### `unifi-api`
-Execute any UniFi API call. Examples:
+Execute any UniFi Integration API call. Examples:
 - `unifi-api` with `path="/v2/sites"` → list all sites
 - `unifi-api` with `path="/v1/sites/{siteId}/devices"` and `pathParams={siteId:"default"}` → get devices
 - `unifi-api` with `path="/v1/sites/{siteId}/clients"` and `pathParams={siteId:"default"}` → get clients
 
 ### `unifi-api-schema`
-Discover available API operations:
+Discover available Integration API operations:
 - No args → list all tags/operations
 - `tag="sites"` → operations for sites
 - `path="/v1/sites/{siteId}/devices"` → details for that path
+
+### `unifi-legacy-client-stats`
+Get per-client bandwidth statistics from the **legacy controller API** (`/api/s/{site}/stat/sta`). This endpoint is separate from the Integration API and returns real-time tx/rx bytes and rates per client.
+
+**Why a separate tool?** The legacy controller API is not covered by the UniFi OpenAPI spec (beezly/unifi-apis). It exists on the same controller but uses different paths (`/proxy/network/api/s/`) and returns bandwidth data (tx_bytes, rx_bytes, tx_rate, rx_rate) unavailable in the Integration API.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `site` | string | `"default"` | Site name or ID |
+
+**Example response:**
+```json
+{
+  "success": true,
+  "message": "Legacy client stats: 30 active clients on site 'default'",
+  "data": {
+    "count": 30,
+    "site": "default",
+    "clients": [
+      {
+        "hostname": "Z-Fold7-Labby",
+        "ip": "192.168.10.147",
+        "mac": "6e:d0:07:c9:3f:2b",
+        "network": "Default",
+        "vlan": 1,
+        "is_wired": false,
+        "tx_bytes": 4185213456,
+        "tx_bytes_formatted": "3.9 GB",
+        "rx_bytes": 138921456,
+        "rx_bytes_formatted": "132.5 MB",
+        "tx_rate_bps": 1540.5,
+        "tx_rate_formatted": "1.5 Kbps",
+        "rx_rate_bps": 892.3,
+        "rx_rate_formatted": "892 bps",
+        "uptime": 316245,
+        "uptime_formatted": "3 days 15h 50m",
+        "signal": -54,
+        "essid": "MyWiFi",
+        "ap": "UDM-Pro"
+      }
+    ]
+  }
+}
+```
 
 ## Troubleshooting
 
@@ -166,15 +210,17 @@ Discover available API operations:
 
 ## Architecture
 
-**Token savings:** Traditional UniFi MCP servers cost ~45,000–60,000 tokens per session. This 2-tool OpenAPI approach costs ~500–1,500 tokens — a **~97% reduction**.
+**Token savings:** Traditional UniFi MCP servers cost ~45,000–60,000 tokens per session. The 2-tool + 1-legacy approach costs ~500–1,500 tokens for the Integration API, plus ~200 tokens for the legacy stats tool — a **~97% reduction**.
 
 | Approach | Tools | Token Cost | Coverage |
 |----------|-------|------------|----------|
 | [enuno/unifi-mcp-server](https://github.com/enuno/unifi-mcp-server) (explicit) | 148 | ~45,000–60,000 | Fixed |
 | [sirkirby/unifi-mcp](https://github.com/sirkirby/unifi-mcp) (multi-product) | ~82 | ~25,000–35,000 | Network + Protect + Access + Drive |
-| **This server (2-tool OpenAPI)** | **2 generic** | **~500–1,500** | **All 44+ Network API operations** |
+| **This server (2-tool + 1-legacy)** | **3 tools** | **~700–1,700** | **44+ Integration API ops + legacy stats** |
 
-- **2 tools** instead of 148 explicit tools → ~97% less context overhead
+- **3 tools** instead of 148 explicit tools → ~97% less context overhead
+- 2 generic tools for Integration API (OpenAPI spec-driven, dynamically scales with API surface)
+- 1 legacy tool for bandwidth stats (not in OpenAPI spec, controller-specific)
 - Inspired by [@dokploy/mcp](https://www.npmjs.com/package/dokploy-mcp) ([tacticlaunch/dokploy-mcp](https://github.com/tacticlaunch/dokploy-mcp)) — first MCP server to demonstrate the 2-tool OpenAPI pattern, covering 463 Dokploy operations in ~500 tokens
 - OpenAPI specs from [beezly/unifi-apis](https://github.com/beezly/unifi-apis) (which traces its API research lineage to [sirkirby/unifi-mcp](https://github.com/sirkirby/unifi-mcp))
 

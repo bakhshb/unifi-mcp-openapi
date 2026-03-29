@@ -1,6 +1,6 @@
 {
   "name": "@bakhshb/unifi-mcp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "2-tool OpenAPI-driven MCP server for UniFi Network",
   "main": "build/index.js",
   "bin": {
