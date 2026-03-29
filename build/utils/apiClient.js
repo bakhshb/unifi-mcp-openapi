@@ -19,17 +19,27 @@ function getHeaders(apiType) {
         "Content-Type": "application/json",
         Accept: "application/json",
     };
+    // For local mode, support both session cookies AND API key
     if (apiType === "local") {
-        const sessionCookie = process.env["UNIFI_SESSION_COOKIE"];
-        if (sessionCookie) {
-            headers["Cookie"] = sessionCookie;
+        // Prefer API key if provided (like enuno/unifi-mcp-server)
+        const apiKey = process.env["UNIFI_API_KEY"];
+        if (apiKey) {
+            headers["X-API-Key"] = apiKey;
         }
-        const csrfToken = process.env["UNIFI_CSRF_TOKEN"];
-        if (csrfToken) {
-            headers["X-CSRF-Token"] = csrfToken;
+        else {
+            // Fall back to session cookie auth
+            const sessionCookie = process.env["UNIFI_SESSION_COOKIE"];
+            if (sessionCookie) {
+                headers["Cookie"] = sessionCookie;
+            }
+            const csrfToken = process.env["UNIFI_CSRF_TOKEN"];
+            if (csrfToken) {
+                headers["X-CSRF-Token"] = csrfToken;
+            }
         }
     }
     else {
+        // Cloud API requires API key
         const apiKey = process.env["UNIFI_API_KEY"];
         if (!apiKey) {
             throw new Error("UNIFI_API_KEY is required for Cloud API. " +
