@@ -121,6 +121,27 @@ Or in openclaw.json:
 
 **Note:** For local mode, you can also use session cookies (`UNIFI_SESSION_COOKIE` + `UNIFI_CSRF_TOKEN`) instead of API key, but API key is simpler.
 
+### API Modes Explained
+
+UniFi MCP supports three connection modes, set via `UNIFI_API_TYPE`:
+
+| Mode | When to use | Auth required | Rate limit |
+|------|-------------|---------------|------------|
+| `local` | Your Dream Machine / UDM Pro SE on the LAN | API key | None |
+| `cloud-v1` | Remote management via Ubiquiti cloud (stable) | API key | 10,000 req/min |
+| `cloud-ea` | Remote management via Ubiquiti cloud (Early Access) | API key | 100 req/min |
+
+**`local`** — Connect directly to your UniFi controller on the local network. Full access, no external traffic, no rate limits. Requires `UNIFI_LOCAL_HOST`.
+
+**`cloud-v1`** — Stable cloud API hosted at `api.ui.com`. Backward compatible with long-term support. Higher rate limit but core feature set only.
+
+**`cloud-ea`** — Early Access cloud API at `api.ui.com`. Newer features before they land in v1, but lower rate limit and may still evolve. The Site Manager API and some newer endpoints live here first.
+
+**Which to choose?**
+- **Home lab / local network** → `local` (your UDM Pro SE)
+- **Remote management, production stability** → `cloud-v1`
+- **Remote management, want latest features** → `cloud-ea`
+
 ## Commands
 
 ### `unifi-api`
