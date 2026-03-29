@@ -107,9 +107,9 @@ Discover available API operations:
 
 ## Architecture
 
-- **2 tools** instead of 82-148 → ~95% less context overhead
-- Powered by [beezly/unifi-apis](https://github.com/beezly/unifi-apis) OpenAPI specs
-- Inspired by [limehawk/dokploy-mcp](https://github.com/limehawk/dokploy-mcp)
+- **2 tools** instead of 82-148 explicit tools → ~95% less context overhead
+- Inspired by [limehawk/dokploy-mcp](https://github.com/limehawk/dokploy-mcp) 2-tool OpenAPI pattern
+- Uses [beezly/unifi-apis](https://github.com/beezly/unifi-apis) OpenAPI specs for UniFi Network API
 
 ## License
 
