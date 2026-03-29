@@ -145,16 +145,17 @@ Discover available API operations:
 
 ## Architecture
 
-**Token savings:** Traditional UniFi MCP servers (like [enuno/unifi-mcp-server](https://github.com/enuno/unifi-mcp-server) with 148 explicit tools) cost ~45,000–60,000 tokens per session. This 2-tool OpenAPI approach costs ~500–1,500 tokens — a **~97% reduction**.
+**Token savings:** Traditional UniFi MCP servers cost ~45,000–60,000 tokens per session. This 2-tool OpenAPI approach costs ~500–1,500 tokens — a **~97% reduction**.
 
 | Approach | Tools | Token Cost | Coverage |
 |----------|-------|------------|----------|
-| Traditional (enuno/unifi-mcp-server) | 148 explicit | ~45,000–60,000 | Fixed |
-| **This server (2-tool OpenAPI)** | **2 generic** | **~500–1,500** | **All 44+ UniFi API operations** |
+| [enuno/unifi-mcp-server](https://github.com/enuno/unifi-mcp-server) (explicit) | 148 | ~45,000–60,000 | Fixed |
+| [sirkirby/unifi-mcp](https://github.com/sirkirby/unifi-mcp) (multi-product) | ~82 | ~25,000–35,000 | Network + Protect + Access + Drive |
+| **This server (2-tool OpenAPI)** | **2 generic** | **~500–1,500** | **All 44+ Network API operations** |
 
 - **2 tools** instead of 148 explicit tools → ~97% less context overhead
 - Inspired by [@dokploy/mcp](https://www.npmjs.com/package/dokploy-mcp) ([tacticlaunch/dokploy-mcp](https://github.com/tacticlaunch/dokploy-mcp)) — first MCP server to demonstrate the 2-tool OpenAPI pattern, covering 463 Dokploy operations in ~500 tokens
-- Uses [beezly/unifi-apis](https://github.com/beezly/unifi-apis) OpenAPI specs for UniFi Network API
+- OpenAPI specs from [beezly/unifi-apis](https://github.com/beezly/unifi-apis) (which traces its API research lineage to [sirkirby/unifi-mcp](https://github.com/sirkirby/unifi-mcp))
 
 ## License
 
