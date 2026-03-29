@@ -153,7 +153,7 @@ Discover available API operations:
 | **This server (2-tool OpenAPI)** | **2 generic** | **~500–1,500** | **All 44+ UniFi API operations** |
 
 - **2 tools** instead of 148 explicit tools → ~97% less context overhead
-- Inspired by [limehawk/dokploy-mcp](https://github.com/limehawk/dokploy-mcp) 2-tool OpenAPI pattern
+- Inspired by [@dokploy/mcp](https://www.npmjs.com/package/dokploy-mcp) ([tacticlaunch/dokploy-mcp](https://github.com/tacticlaunch/dokploy-mcp)) — first MCP server to demonstrate the 2-tool OpenAPI pattern, covering 463 Dokploy operations in ~500 tokens
 - Uses [beezly/unifi-apis](https://github.com/beezly/unifi-apis) OpenAPI specs for UniFi Network API
 
 ## License
