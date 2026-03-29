@@ -1,159 +1,69 @@
 import { z } from "zod";
-import { createLogger } from "../../utils/logger.js";
+import { getOpenApiSpec } from "../../utils/openApiSpec.js";
+import { getApiType } from "../../utils/apiClient.js";
+import { mapSpecPathToApiPath, getApiTypeDescription } from "../../utils/pathMapper.js";
 import { ResponseFormatter } from "../../utils/responseFormatter.js";
-import { getOpenApiSpec, resolveSchema, } from "../../utils/openApiSpec.js";
-import { getApiType, mapSpecPathToApiPath } from "../../utils/pathMapper.js";
-const logger = createLogger("UnifiApiSchema");
-const SUPPORTED_METHODS = ["get", "post", "put", "delete", "patch"];
-function extractOperation(spec, path, method, op) {
-    const apiType = getApiType();
-    const detail = {
-        path,
-        cloudApiPath: mapSpecPathToApiPath(path, apiType),
-        method: method.toUpperCase(),
-        operationId: op.operationId,
-        summary: op.summary,
-        description: op.description,
-        tags: op.tags,
-    };
-    if (op.parameters && op.parameters.length > 0) {
-        const pathParams = [];
-        const queryParams = [];
-        for (const param of op.parameters) {
-            const info = {
-                name: param.name,
-                required: param.required ?? false,
-                type: param.schema?.["type"] ?? "string",
-                description: param.description,
-            };
-            if (param.in === "path") {
-                pathParams.push(info);
-            }
-            else if (param.in === "query") {
-                queryParams.push(info);
-            }
-        }
-        if (pathParams.length > 0)
-            detail.pathParams = pathParams;
-        if (queryParams.length > 0)
-            detail.queryParams = queryParams;
-    }
-    if (op.requestBody) {
-        const jsonContent = op.requestBody.content["application/json"];
-        if (jsonContent?.schema) {
-            detail.requestBody = resolveSchema(spec, jsonContent.schema);
-        }
-    }
-    return detail;
-}
 export const schema = {
-    tag: z
-        .string()
-        .optional()
-        .describe('Filter operations by tag, e.g. "Sites", "UniFi Devices", "Clients", "Networks", "Firewall"'),
-    path: z
-        .string()
-        .optional()
-        .describe('Get details for a specific spec path, e.g. "/v1/sites/{siteId}/devices"'),
-    method: z
-        .enum(["GET", "POST", "PUT", "DELETE", "PATCH"])
-        .optional()
-        .describe("Filter by HTTP method when combined with path (defaults to listing all methods for that path)"),
+    tag: z.string().optional().describe("Filter by tag (e.g. 'sites', 'devices', 'networks')"),
+    path: z.string().optional().describe("Get details for a specific path (e.g. /v1/sites/{siteId}/devices)"),
 };
 export const name = "unifi-api-schema";
-export const description = "Discover UniFi Network Cloud API operations and their parameters from the OpenAPI spec. " +
-    "Call with no args for a tag summary, with tag to list operations, " +
-    "or with path for full parameter details including request body schema. " +
-    "Returns the mapped cloudApiPath showing the actual URL that will be called.";
+export const description = "Discover available UniFi Network API operations from the OpenAPI spec. Call with no args for a tag overview, with tag to list operations in that tag, or with path for full parameter and request body details.";
 export const annotations = {
     title: "UniFi API Schema",
     readOnlyHint: true,
-    idempotentHint: true,
+    openWorldHint: true,
 };
 export async function handler(input) {
-    try {
-        const spec = getOpenApiSpec();
-        const apiType = getApiType();
-        // Specific path requested
-        if (input.path) {
-            const pathObj = spec.paths[input.path];
-            if (!pathObj) {
-                return ResponseFormatter.error("Path not found", `No path "${input.path}" in spec. Use unifi-api-schema without args to see available tags.`);
-            }
-            const operations = [];
-            const methodFilter = input.method?.toLowerCase();
-            for (const method of SUPPORTED_METHODS) {
-                if (method in pathObj) {
-                    if (methodFilter && method !== methodFilter)
-                        continue;
-                    const op = pathObj[method];
-                    operations.push(extractOperation(spec, input.path, method, op));
-                }
-            }
-            return ResponseFormatter.success(`Schema for ${input.path}`, {
-                specPath: input.path,
-                cloudApiPath: mapSpecPathToApiPath(input.path, apiType),
-                apiType,
-                operations,
-            });
+    const { tag, path } = input;
+    const apiType = getApiType();
+    const spec = getOpenApiSpec();
+    if (path) {
+        const specPathEntry = Object.entries(spec.paths).find(([p]) => p === path);
+        if (!specPathEntry) {
+            return ResponseFormatter.error("Path not found", `'${path}' not found. Available: ${Object.keys(spec.paths).slice(0, 10).join(", ")}...`);
         }
-        // Tag filter — list operations for that tag
-        if (input.tag) {
-            const operations = [];
-            for (const [path, methods] of Object.entries(spec.paths)) {
-                for (const method of SUPPORTED_METHODS) {
-                    if (!(method in methods))
-                        continue;
-                    const op = methods[method];
-                    if (op.tags && op.tags.includes(input.tag)) {
-                        operations.push({
-                            path,
-                            cloudApiPath: mapSpecPathToApiPath(path, apiType),
-                            method: method.toUpperCase(),
-                            summary: op.summary,
-                            operationId: op.operationId,
-                        });
-                    }
-                }
-            }
-            if (operations.length === 0) {
-                return ResponseFormatter.error("Tag not found", `No operations with tag "${input.tag}". Use unifi-api-schema without args to see available tags.`);
-            }
-            return ResponseFormatter.success(`Operations in tag: ${input.tag}`, {
-                tag: input.tag,
-                apiType,
-                count: operations.length,
-                operations: operations.sort((a, b) => a.path.localeCompare(b.path)),
-            });
-        }
-        // No filter — return tag summary
-        const tagCounts = {};
-        let totalOperations = 0;
-        for (const methods of Object.values(spec.paths)) {
-            for (const method of SUPPORTED_METHODS) {
-                if (!(method in methods))
-                    continue;
-                const op = methods[method];
-                totalOperations++;
-                for (const tag of op.tags ?? ["untagged"]) {
-                    tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
-                }
-            }
-        }
-        return ResponseFormatter.success("Available tags", {
-            apiTitle: spec.info["title"] ?? "UniFi Network API",
-            apiVersion: spec.info["version"] ?? "unknown",
+        const [specPath, operations] = specPathEntry;
+        const apiPath = mapSpecPathToApiPath(specPath, apiType);
+        const methods = Object.keys(operations).filter((m) => m !== "parameters");
+        return ResponseFormatter.success(`Path: ${specPath}`, {
             apiType,
-            baseUrl: `https://api.ui.com`,
-            totalPaths: Object.keys(spec.paths).length,
-            totalOperations,
-            tags: tagCounts,
+            apiTypeDescription: getApiTypeDescription(apiType),
+            baseUrl: apiType === "local" ? "https://192.168.100.1" : "https://api.ui.com",
+            specPath,
+            cloudApiPath: apiPath,
+            methods,
         });
     }
-    catch (error) {
-        logger.error("Failed to read API schema", {
-            error: error instanceof Error ? error.message : "Unknown error",
-        });
-        return ResponseFormatter.error("Failed to read API schema", error instanceof Error ? error.message : "Unknown error");
+    if (tag) {
+        const matchingPaths = Object.entries(spec.paths)
+            .filter(([, ops]) => {
+            const tagList = ops.tags ?? [];
+            return tagList.includes(tag);
+        })
+            .map(([p]) => p);
+        if (matchingPaths.length === 0) {
+            const allTags = [...new Set(Object.values(spec.paths).flatMap((ops) => ops.tags ?? []))];
+            return ResponseFormatter.error("Tag not found", `Tag '${tag}' not found. Available: ${allTags.join(", ")}`);
+        }
+        return ResponseFormatter.success(`Tag: ${tag} (${matchingPaths.length} paths)`, { apiType, tag, paths: matchingPaths });
     }
+    // Return all tags summary
+    const tagMap = new Map();
+    for (const [p, ops] of Object.entries(spec.paths)) {
+        const tags = ops.tags ?? ["untagged"];
+        for (const t of tags) {
+            if (!tagMap.has(t))
+                tagMap.set(t, []);
+            tagMap.get(t).push(p);
+        }
+    }
+    return ResponseFormatter.success(`UniFi Network API — ${Object.keys(spec.paths).length} paths across ${tagMap.size} tags`, {
+        apiType,
+        apiTypeDescription: getApiTypeDescription(apiType),
+        baseUrl: apiType === "local" ? "https://192.168.100.1" : "https://api.ui.com",
+        pathPrefix: apiType === "local" ? "/proxy/network/integration" : apiType === "cloud-ea" ? "/integration" : "",
+        tags: Object.fromEntries(tagMap),
+        totalPaths: Object.keys(spec.paths).length,
+    });
 }

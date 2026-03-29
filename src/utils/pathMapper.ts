@@ -1,25 +1,21 @@
+import { ApiType } from "./apiClient.js";
+
 /**
- * Maps OpenAPI spec paths to UniFi Cloud API paths based on API type.
+ * Maps OpenAPI spec paths to actual API paths based on API type.
  *
  * The spec uses paths like /v1/sites/{siteId}/devices
- * - cloud-v1:  use as-is              → /v1/sites/{siteId}/devices
- * - cloud-ea:  prepend /integration/  → /integration/v1/sites/{siteId}/devices
- */
-
-export type ApiType = "cloud-v1" | "cloud-ea";
-
-export function getApiType(): ApiType {
-  const raw = process.env["UNIFI_API_TYPE"] ?? "cloud-ea";
-  if (raw === "cloud-v1" || raw === "cloud-ea") return raw;
-  return "cloud-ea";
-}
-
-/**
- * Converts a spec path to the actual Cloud API path.
+ *
+ * local:     /v1/... → /proxy/network/integration/v1/...
+ * cloud-v1:  /v1/... → /v1/...
+ * cloud-ea:  /v1/... → /integration/v1/...
  */
 export function mapSpecPathToApiPath(specPath: string, apiType: ApiType): string {
+  if (apiType === "local") {
+    // Local controller uses proxy path
+    return `/proxy/network/integration${specPath}`;
+  }
   if (apiType === "cloud-ea") {
-    // /v1/... → /integration/v1/...
+    // Cloud EA uses /integration prefix
     return `/integration${specPath}`;
   }
   // cloud-v1: use as-is
@@ -42,4 +38,18 @@ export function buildUrl(
     }
     return String(val);
   });
+}
+
+/**
+ * Returns the API type description for the schema tool response.
+ */
+export function getApiTypeDescription(apiType: ApiType): string {
+  switch (apiType) {
+    case "local":
+      return "Local controller (session auth)";
+    case "cloud-v1":
+      return "UniFi Cloud API v1 (API key auth)";
+    case "cloud-ea":
+      return "UniFi Cloud EA API (API key auth)";
+  }
 }
