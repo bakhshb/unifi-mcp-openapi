@@ -75,13 +75,51 @@ npx @bakhshb/unifi-mcp
 
 ## Local Dream Machine Setup
 
-If running a **local UniFi controller** (UniFi Dream Machine, etc):
+Your **local UniFi controller** (Dream Machine, etc.) also supports API keys, just like the cloud API. Generate an API key in your controller settings:
+
+1. Go to your UniFi Controller → Settings → API Keys
+2. Create a new key for local access
+3. Use the same env vars as cloud, but with `UNIFI_API_TYPE=local`
 
 ```bash
 UNIFI_API_TYPE=local
+UNIFI_API_KEY=your-local-api-key
 UNIFI_LOCAL_HOST=192.168.1.1
 UNIFI_LOCAL_VERIFY_SSL=false
 ```
+
+Or in openclaw.json:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "unifi": {
+        "command": "npx",
+        "args": ["@bakhshb/unifi-mcp"],
+        "env": {
+          "UNIFI_API_TYPE": "local",
+          "UNIFI_API_KEY": "your-local-api-key",
+          "UNIFI_LOCAL_HOST": "192.168.1.1",
+          "UNIFI_LOCAL_VERIFY_SSL": "false"
+        }
+      }
+    }
+  }
+}
+```
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `UNIFI_API_TYPE` | Yes | `local` | `local`, `cloud-v1`, or `cloud-ea` |
+| `UNIFI_API_KEY` | Yes | - | Your API key (for both cloud and local) |
+| `UNIFI_LOCAL_HOST` | For local | `192.168.100.1` | Your UniFi controller IP |
+| `UNIFI_LOCAL_VERIFY_SSL` | No | `true` | Set `false` to skip SSL verification |
+| `UNIFI_TIMEOUT` | No | `30000` | Request timeout in milliseconds |
+
+**Note:** For local mode, you can also use session cookies (`UNIFI_SESSION_COOKIE` + `UNIFI_CSRF_TOKEN`) instead of API key, but API key is simpler.
 
 ## Commands
 
