@@ -1,5 +1,6 @@
 import axios from "axios";
 import { createLogger } from "./logger.js";
+import * as https from "https";
 const logger = createLogger("AxiosClient");
 export function getApiType() {
     const raw = process.env["UNIFI_API_TYPE"] ?? "local";
@@ -69,7 +70,7 @@ export function getApiClient() {
         timeout,
         headers,
         ...(apiType === "local" && process.env["UNIFI_LOCAL_VERIFY_SSL"] === "false"
-            ? { httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }) }
+            ? { httpsAgent: new https.Agent({ rejectUnauthorized: false }) }
             : {}),
     });
     clientInstance.interceptors.request.use((config) => {

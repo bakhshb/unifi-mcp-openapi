@@ -5,6 +5,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import { createLogger } from "./logger.js";
+import * as https from "https";
 
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
   metadata?: {
@@ -93,7 +94,7 @@ export function getApiClient(): AxiosInstance {
     timeout,
     headers,
     ...(apiType === "local" && process.env["UNIFI_LOCAL_VERIFY_SSL"] === "false"
-      ? { httpsAgent: new (require("https").Agent)({ rejectUnauthorized: false }) }
+      ? { httpsAgent: new https.Agent({ rejectUnauthorized: false }) }
       : {}),
   });
 
