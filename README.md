@@ -169,31 +169,50 @@ Get per-client bandwidth statistics from the **legacy controller API** (`/api/s/
 ```json
 {
   "success": true,
-  "message": "Legacy client stats: 30 active clients on site 'default'",
+  "message": "Legacy client stats: 2 active clients on site 'default'",
   "data": {
-    "count": 30,
+    "count": 2,
     "site": "default",
     "clients": [
       {
-        "hostname": "Z-Fold7-Labby",
-        "ip": "192.168.10.147",
-        "mac": "6e:d0:07:c9:3f:2b",
-        "network": "Default",
+        "hostname": "iPhone",
+        "ip": "192.168.1.100",
+        "mac": "aa:bb:cc:dd:ee:ff",
+        "network": "Home",
         "vlan": 1,
         "is_wired": false,
-        "tx_bytes": 4185213456,
-        "tx_bytes_formatted": "3.9 GB",
-        "rx_bytes": 138921456,
-        "rx_bytes_formatted": "132.5 MB",
-        "tx_rate_bps": 1540.5,
+        "tx_bytes": 1234567890,
+        "tx_bytes_formatted": "1.15 GB",
+        "rx_bytes": 987654321,
+        "rx_bytes_formatted": "941.8 MB",
+        "tx_rate_bps": 1500,
         "tx_rate_formatted": "1.5 Kbps",
-        "rx_rate_bps": 892.3,
-        "rx_rate_formatted": "892 bps",
-        "uptime": 316245,
-        "uptime_formatted": "3 days 15h 50m",
-        "signal": -54,
+        "rx_rate_bps": 800,
+        "rx_rate_formatted": "800 bps",
+        "uptime": 3600,
+        "uptime_formatted": "1h 0m",
+        "signal": -50,
         "essid": "MyWiFi",
-        "ap": "UDM-Pro"
+        "ap_name": "UDM-Pro"
+      },
+      {
+        "hostname": "laptop",
+        "ip": "192.168.1.50",
+        "mac": "11:22:33:44:55:66",
+        "network": "Home",
+        "vlan": 1,
+        "is_wired": true,
+        "tx_bytes": 50000000,
+        "tx_bytes_formatted": "47.7 MB",
+        "rx_bytes": 100000000,
+        "rx_bytes_formatted": "95.4 MB",
+        "tx_rate_bps": 0,
+        "tx_rate_formatted": "0 B/s",
+        "rx_rate_bps": 0,
+        "rx_rate_formatted": "0 B/s",
+        "uptime": 7200,
+        "uptime_formatted": "2h 0m",
+        "ap_name": "Switch"
       }
     ]
   }
