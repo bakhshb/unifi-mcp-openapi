@@ -1,5 +1,7 @@
 # UniFi MCP Server
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Control your UniFi network via AI. 2-tool design powered by OpenAPI spec — works with **UniFi Cloud API** or **local Dream Machine**.
 
 ## What it does
@@ -245,4 +247,6 @@ Get per-client bandwidth statistics from the **legacy controller API** (`/api/s/
 
 ## License
 
-MIT
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+MIT License
