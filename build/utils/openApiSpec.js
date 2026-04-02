@@ -2,16 +2,12 @@ import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import { createLogger } from "./logger.js";
+import { SUPPORTED_METHODS } from "./constants.js";
 const logger = createLogger("OpenApiSpec");
-// Resolve spec path relative to this file's location
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// From build/utils/ → ../../reference.json
-const SPEC_PATH = join(__dirname, "../../reference.json");
+const SPEC_PATH = join(__dirname, "../../reference/unifi-api.json");
 let cachedSpec = null;
-/**
- * Loads and caches the OpenAPI spec from the local JSON file.
- */
 export function getOpenApiSpec() {
     if (cachedSpec)
         return cachedSpec;
@@ -23,11 +19,6 @@ export function getOpenApiSpec() {
     });
     return cachedSpec;
 }
-const SUPPORTED_METHODS = ["get", "post", "put", "delete", "patch"];
-/**
- * Auto-detects the preferred HTTP method for a given path.
- * Preference order: get → post → put → delete → patch
- */
 export function detectMethod(path) {
     const spec = getOpenApiSpec();
     const pathObj = spec.paths[path];

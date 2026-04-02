@@ -115,11 +115,14 @@ Or in openclaw.json:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `UNIFI_API_TYPE` | Yes | `local` | `local`, `cloud-v1`, or `cloud-ea` |
-| `UNIFI_API_KEY` | Yes | - | Your API key (for both cloud and local) |
-| `UNIFI_LOCAL_HOST` | For local | `192.168.100.1` | Your UniFi controller IP |
-| `UNIFI_LOCAL_VERIFY_SSL` | No | `true` | Set `false` to skip SSL verification |
+| `UNIFI_URL` | Yes | - | Your UniFi controller URL (e.g., `https://192.168.1.1` or `https://api.ui.com` for cloud) |
+| `UNIFI_API_KEY` | Yes* | - | Your API key (*required if not using username/password) |
+| `UNIFI_USERNAME` | Yes* | - | UniFi username (*required if not using API key) |
+| `UNIFI_PASSWORD` | Yes* | - | UniFi password (*required if not using API key) |
+| `UNIFI_SITE_ID` | No | `default` | Your UniFi site identifier |
 | `UNIFI_TIMEOUT` | No | `30000` | Request timeout in milliseconds |
+
+**Note:** Set either `UNIFI_API_KEY` OR (`UNIFI_USERNAME` + `UNIFI_PASSWORD`).
 
 **Note:** For local mode, you can also use session cookies (`UNIFI_SESSION_COOKIE` + `UNIFI_CSRF_TOKEN`) instead of API key, but API key is simpler.
 

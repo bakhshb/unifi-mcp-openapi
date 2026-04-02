@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { AxiosError } from "axios";
 import { getApiClient, getApiType } from "../../utils/apiClient.js";
-import { mapSpecPathToApiPath, buildUrl } from "../../utils/pathMapper.js";
+import { mapSpecPathToApiPath } from "../../utils/pathMapper.js";
+import { buildUrl } from "../../utils/httpUtils.js";
 import { createLogger } from "../../utils/logger.js";
-import { getOpenApiSpec, detectMethod, type HttpMethod } from "../../utils/openApiSpec.js";
+import { getOpenApiSpec, detectMethod } from "../../utils/openApiSpec.js";
 import { ResponseFormatter } from "../../utils/responseFormatter.js";
+import { type HttpMethod } from "../../utils/constants.js";
 
 const logger = createLogger("UnifiApi");
 
@@ -57,14 +59,16 @@ export async function handler(input: {
 
     logger.info(`Calling ${methodRaw.toUpperCase()} ${url} (${apiType})`);
 
-    const client = getApiClient();
+    const client = getApiClient() as unknown as { [key: string]: (url: string, config?: unknown) => Promise<{ data: unknown }> };
     let responseData: unknown;
 
     if (methodRaw === "get" || methodRaw === "delete") {
-      const response = await client[methodRaw](url, { params: queryParams });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await (client as any)[methodRaw](url, { params: queryParams });
       responseData = response.data;
     } else {
-      const response = await client[methodRaw](url, body ?? {});
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await (client as any)[methodRaw](url, body ?? {});
       responseData = response.data;
     }
 

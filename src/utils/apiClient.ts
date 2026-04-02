@@ -5,6 +5,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import { createLogger } from "./logger.js";
+import { DEFAULT_TIMEOUT } from "./constants.js";
 import * as https from "https";
 
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -70,7 +71,7 @@ function getHeaders(apiType: ApiType): Record<string, string> {
 }
 
 function getTimeout(): number {
-  return parseInt(process.env["UNIFI_TIMEOUT"] ?? "30000", 10);
+  return parseInt(process.env["UNIFI_TIMEOUT"] ?? String(DEFAULT_TIMEOUT), 10);
 }
 
 let clientInstance: AxiosInstance | null = null;

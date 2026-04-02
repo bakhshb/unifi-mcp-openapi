@@ -1,5 +1,6 @@
 import axios from "axios";
 import { createLogger } from "./logger.js";
+import { DEFAULT_TIMEOUT } from "./constants.js";
 import * as https from "https";
 const logger = createLogger("AxiosClient");
 export function getApiType() {
@@ -51,7 +52,7 @@ function getHeaders(apiType) {
     return headers;
 }
 function getTimeout() {
-    return parseInt(process.env["UNIFI_TIMEOUT"] ?? "30000", 10);
+    return parseInt(process.env["UNIFI_TIMEOUT"] ?? String(DEFAULT_TIMEOUT), 10);
 }
 let clientInstance = null;
 let lastApiType = null;

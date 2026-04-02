@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { AxiosError } from "axios";
 import { getApiClient, getApiType } from "../../utils/apiClient.js";
-import { mapSpecPathToApiPath, buildUrl } from "../../utils/pathMapper.js";
+import { mapSpecPathToApiPath } from "../../utils/pathMapper.js";
+import { buildUrl } from "../../utils/httpUtils.js";
 import { createLogger } from "../../utils/logger.js";
 import { getOpenApiSpec, detectMethod } from "../../utils/openApiSpec.js";
 import { ResponseFormatter } from "../../utils/responseFormatter.js";
@@ -39,10 +40,12 @@ export async function handler(input) {
         const client = getApiClient();
         let responseData;
         if (methodRaw === "get" || methodRaw === "delete") {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const response = await client[methodRaw](url, { params: queryParams });
             responseData = response.data;
         }
         else {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const response = await client[methodRaw](url, body ?? {});
             responseData = response.data;
         }

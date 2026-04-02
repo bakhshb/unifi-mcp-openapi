@@ -20,21 +20,6 @@ export function mapSpecPathToApiPath(specPath, apiType) {
     return specPath;
 }
 /**
- * Substitutes path parameters in the URL template.
- * e.g. /v1/sites/{siteId}/devices + { siteId: "abc123" } → /v1/sites/abc123/devices
- */
-export function buildUrl(pathTemplate, pathParams) {
-    if (!pathParams)
-        return pathTemplate;
-    return pathTemplate.replace(/\{([^}]+)\}/g, (_, key) => {
-        const val = pathParams[key];
-        if (val === undefined || val === null) {
-            throw new Error(`Missing path parameter: ${key}`);
-        }
-        return String(val);
-    });
-}
-/**
  * Returns the API type description for the schema tool response.
  */
 export function getApiTypeDescription(apiType) {
